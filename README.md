@@ -3,9 +3,10 @@
 Console application that can transform multiple images in directory. 
 
 It can:
-- resize every image (you can specify width, length and quality)
-- draw custom text on every image (you can specify corner in which text will appear, font size, font family and font color)
-- draw custom image on every image (you can specify corner in which image will appear)
+
+* resize every image (you can specify width, length and quality)
+* draw custom text on every image (you can specify corner in which text will appear, font size, font family and font color)
+* draw custom image on every image (you can specify corner in which image will appear)
 
 ### Examples ###
 
