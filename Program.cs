@@ -16,15 +16,26 @@ namespace ImgResize
         const string programName = "imgres.exe";
         static string inputDir = "";
         static string outputDir = "";
-        static int width = 100;
-        static int height = 100;
+        static int width = 0;
+        static int height = 0;
         static int quality = 90;
         static bool verbose = false;
         static bool showHelp = false;
+        static string logoPath = "";
+        static string customString = "";
+        static string corner = "br";
+        static string fontFamily = "";
+        static int fontSize = 0;
+        static string fontColor = "";
+        static Font font = new Font("Arial", 12);
+        static Color color = Color.LightGray;
 
         static bool qualityParsed = true;
         static bool widthParsed = true;
         static bool heightParsed = true;
+        static bool fontSizeParsed = true;
+
+        static bool overwriteFiles = false;
 
         static void Main(string[] args)
         {
@@ -43,13 +54,13 @@ namespace ImgResize
                 return;
             }
 
-            if (!ValidateOptions())
+            if (showHelp)
             {
                 ShowHelp(options);
                 return;
             }
 
-            if (showHelp)
+            if (!ValidateOptions())
             {
                 ShowHelp(options);
                 return;
@@ -63,25 +74,78 @@ namespace ImgResize
 
             if (verbose)
             {
-                Console.WriteLine("number of files: {0}", files.Length);
-                Console.WriteLine("quality: {0}", quality);
-                Console.WriteLine("width:   {0}", width);
-                Console.WriteLine("height:  {0}", height);
+                Console.WriteLine("number of files...{0}", files.Length);
+                Console.WriteLine("quality...........{0}", quality);
+                Console.WriteLine("width.............{0}", width);
+                Console.WriteLine("height............{0}", height);
             }
 
             foreach (var file in files)
             {
-                using (Bitmap resized = Image.FromFile(file).Scale(new Size(width, height)))
+                using (Bitmap original = (Bitmap)Image.FromFile(file))
                 {
                     string fileName = Path.Combine(outputDir, Path.GetFileName(file));
-                    resized.Save(fileName, jgpEncoder, encParams);
+
+                    if (!overwriteFiles && File.Exists(fileName))
+                    {
+                        Console.WriteLine("Destination file exists. Do you wish to overwrite all conflicting files? [Y/N]");
+                        string answer = Console.ReadLine();
+                        if (answer.ToLower() == "y")
+                            overwriteFiles = true;
+                        else
+                            return;
+                    }
+
+                    Corner cornerEnum = Corner.BottomRight;
+                    if (corner == "ul")
+                        cornerEnum = Corner.UpperLeft;
+                    else if (corner == "ur")
+                        cornerEnum = Corner.UpperRight;
+                    else if (corner == "bl")
+                        cornerEnum = Corner.BottomLeft;
+                    else if (corner == "br")
+                        cornerEnum = Corner.BottomRight;
+
+                    if (width > 0 && height > 0) // with scaling
+                    {
+                        using (Bitmap scaled = original.Scale(new Size(width, height)))
+                        {
+                            if (!string.IsNullOrWhiteSpace(logoPath)) // add logo
+                            {
+                                using (Image logoImg = Image.FromFile(logoPath))
+                                {
+                                    scaled.DrawLogo(logoImg, cornerEnum);
+                                }
+                            }
+                            else if (!string.IsNullOrWhiteSpace(customString)) // add text
+                            {
+                                scaled.DrawString(customString, cornerEnum, font, color);
+                            }
+                            scaled.Save(fileName, jgpEncoder, encParams);
+                        }
+                    }
+                    else // no scaling
+                    {
+                        if (!string.IsNullOrWhiteSpace(logoPath))
+                        {
+                            using (Image logoImg = Image.FromFile(logoPath)) // add logo
+                            {
+                                original.DrawLogo(logoImg, cornerEnum);
+                            }
+                        }
+                        else // add text
+                        {
+                            original.DrawString(customString, cornerEnum, font, color);
+                        }
+                        original.Save(fileName, jgpEncoder, encParams);
+                    }
 
                     if (verbose)
                     {
                         FileInfo fileInfo = new FileInfo(fileName);
-                        Console.WriteLine("{0} {1} KB",
+                        Console.WriteLine("{0} {1}",
                             fileInfo.Name,
-                            Math.Round((decimal)fileInfo.Length / 1024m, 2).ToString());
+                            fileInfo.HumanReadableLength());
                     }
                 }
             }
@@ -93,17 +157,17 @@ namespace ImgResize
             {
                 {
                     "i|input=",
-                    "input directory",
+                    "{PATH} to input directory",
                     x => inputDir = x
                 },
                 {
                     "o|output=",
-                    "output directory",
+                    "{PATH} to output directory",
                     x => outputDir = x
                 },
                 {
                     "q|quality=",
-                    "quality of scaled images [0-100]",
+                    "quality of scaled images {0-100}. Default is 90.",
                     x => 
                     {
                         int temp;
@@ -115,7 +179,7 @@ namespace ImgResize
                 },
                 {
                     "w|width=",
-                    "width of scaled images",
+                    "width {INTEGER} of scaled images",
                     x => 
                     {
                         int temp;
@@ -127,7 +191,7 @@ namespace ImgResize
                 },
                 {
                     "h|height=",
-                    "height of scaled images",
+                    "height {INTEGER} of scaled images",
                     x =>
                     {
                         int temp;
@@ -135,6 +199,47 @@ namespace ImgResize
                             height = temp;
                         else
                             heightParsed = false;
+                    }
+                },
+                {
+                    "l|logo=",
+                    "{PATH} to the logo image to be drawn on every transformed image",
+                    x => logoPath = x
+                },
+                {
+                    "t|text=",
+                    "custom {TEXT} to be drawn on every transformed image",
+                    x => customString = x
+                },
+                {
+                    "c|corner=",
+                    "{CORNER} of the image in which logo or custom string will be drawn. Default is bottom right. List of valid values:" +
+                    "ul - upper left, " +
+                    "ur - upper right, " +
+                    "bl - bottom left, " +
+                    "br - bottom right, ",
+                    x => corner = x
+                },
+                {
+                    "ff|FontFamily=",
+                    "custom text font family {NAME}",
+                    x => fontFamily = x
+                },
+                {
+                    "fc|FontColor=",
+                    "custom text font color. Can be a name or in {alpha;red;green;blue} format: [0-254;0-254;0-254;0-254].",
+                    x => fontColor = x
+                },
+                {
+                    "fs|FontSize=",
+                    "custom text font {SIZE}",
+                    x =>
+                    {
+                        int temp;
+                        if (int.TryParse(x, out temp) && temp > 0)
+                            fontSize = temp;
+                        else
+                            fontSizeParsed = false;
                     }
                 },
                 {
@@ -159,22 +264,20 @@ namespace ImgResize
                 ShowError("Please specify input directory.");
                 result = false;
             }
+            else if (!Directory.Exists(inputDir))
+            {
+                ShowError("Specified input directory does not exist.");
+                result = false;
+            }
 
             if (string.IsNullOrEmpty(outputDir))
             {
                 ShowError("Please specify output directory.");
                 result = false;
             }
-
-            if (!Directory.Exists(inputDir))
+            else if (!Directory.Exists(outputDir))
             {
-                ShowError("Input directory does not exist.");
-                result = false;
-            }
-
-            if (!Directory.Exists(outputDir))
-            {
-                ShowError("Output directory does not exist.");
+                ShowError("Specified output directory does not exist.");
                 result = false;
             }
 
@@ -196,13 +299,129 @@ namespace ImgResize
                 result = false;
             }
 
+            if ((width == 0 || height == 0)
+                && string.IsNullOrWhiteSpace(logoPath)
+                && string.IsNullOrWhiteSpace(customString))
+            {
+                ShowError("I've got nothing to do. Please specify some transformation.");
+                result = false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(logoPath) && !File.Exists(logoPath))
+            {
+                ShowError("Specified logo file does not exist.");
+                result = false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(logoPath) && File.Exists(logoPath))
+            {
+                FileInfo fileInfo = new FileInfo(logoPath);
+                if (fileInfo.Extension != ".jpg")
+                {
+                    ShowError("Logo image must be a jpg file.");
+                    result = false;
+                }
+            }
+
+            if (!(corner == "ul" || corner == "ur" || corner == "bl" || corner == "br"))
+            {
+                ShowError("Incorrect corner option.");
+                result = false;
+            }
+
+            if (!fontSizeParsed)
+            {
+                ShowError("Font size must be a positive integer.");
+                result = false;
+            }
+            else
+            {
+                if (fontSize != 0)
+                {
+                    try
+                    {
+                        font = new Font(fontFamily, fontSize);
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowError("Cannot parse font size");
+                        ShowError(ex.Message);
+                        result = false;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(fontFamily))
+            {
+                try
+                {
+                    font = new Font(fontFamily, font.Size);
+                }
+                catch (Exception ex)
+                {
+                    ShowError("Cannot parse font family.");
+                    ShowError(ex.Message);
+                    result = false;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(fontColor))
+            {
+                string[] rgb = fontColor.Split(';');
+                if (rgb.Length != 4)
+                {
+                    try
+                    {
+                        color = Color.FromName(fontColor);
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowError("Cannot parse font color.");
+                        ShowError(ex.Message);
+                        result = false;
+                    }
+                }
+                else
+                {
+                    int a = 0;
+                    int r = 0;
+                    int g = 0;
+                    int b = 0;
+
+                    if (!int.TryParse(rgb[0], out a) ||
+                        !int.TryParse(rgb[1], out r) ||
+                        !int.TryParse(rgb[2], out g) ||
+                        !int.TryParse(rgb[3], out b))
+                    {
+                        ShowError("Cannot parse font color.");
+                        result = false;
+                    }
+                    else
+                    {
+                        if (a < 0 || a > 254 ||
+                            r < 0 || r > 254 ||
+                            g < 0 || g > 254 ||
+                            b < 0 || g > 254)
+                        {
+                            ShowError("Wrong argb values.");
+                            result = false;
+                        }
+                        else
+                        {
+                            color = Color.FromArgb(a, r, g, b);
+                        }
+                    }
+
+                }
+            }
+
             return result;
         }
 
         static void ShowHelp(OptionSet p)
         {
             Console.WriteLine("Usage: {0} [OPTIONS]", programName);
-            Console.WriteLine("Resizes all .jpg images within given directory.");
+            Console.WriteLine("Transformes all .jpg images within given directory.");
             Console.WriteLine();
             Console.WriteLine("Options:");
             p.WriteOptionDescriptions(Console.Out);
