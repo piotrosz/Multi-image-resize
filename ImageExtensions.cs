@@ -9,22 +9,22 @@ using System.IO;
 
 namespace ImgResize
 {
-    public static class Extensions
+    public static class ImageExtensions
     {
         public static Bitmap Scale(this Image image, Size size)
         {
             int sourceWidth = image.Width;
             int sourceHeight = image.Height;
 
-            float nPercentW = (size.Width / (float)sourceWidth);
-            float nPercentH = (size.Height / (float)sourceHeight);
+            float percentWidth = (size.Width / (float)sourceWidth);
+            float percentHeight = (size.Height / (float)sourceHeight);
 
-            float nPercent = nPercentH < nPercentW ? nPercentH : nPercentW;
+            float percent = percentHeight > percentWidth ? percentHeight : percentWidth;
 
-            var destWidth = (int)(sourceWidth * nPercent);
-            var destHeight = (int)(sourceHeight * nPercent);
+            var targetWidth = (int)(sourceWidth * percent);
+            var targetHeight = (int)(sourceHeight * percent);
 
-            var bitmapDest = new Bitmap(destWidth, destHeight, image.PixelFormat);
+            var bitmapDest = new Bitmap(targetWidth, targetHeight, image.PixelFormat);
 
             bitmapDest.SetResolution(image.HorizontalResolution, image.VerticalResolution);
 
@@ -48,7 +48,7 @@ namespace ImgResize
 
             using (var graphics = Graphics.FromImage(image))
             {
-                Point point = new Point();
+                var point = new Point();
 
                 switch (corner)
                 {
@@ -67,8 +67,6 @@ namespace ImgResize
                     case Corner.BottomRight:
                         point.X = image.Width - logo.Width;
                         point.Y = image.Height - logo.Height;
-                        break;
-                    default:
                         break;
                 }
 
@@ -80,13 +78,13 @@ namespace ImgResize
         {
             using (var graphics = Graphics.FromImage(image))
             {
-                StringFormat stringFormat = new StringFormat();
-                stringFormat.SetMeasurableCharacterRanges(new CharacterRange[] { new CharacterRange(0, text.Length) });
-                Region[] r = graphics.MeasureCharacterRanges(text, font, new Rectangle(0, 0, image.Width, image.Height), stringFormat);
-                RectangleF rect = r[0].GetBounds(graphics);
-                rect.Width += (int)Math.Ceiling((double)rect.Width * 0.05d);
+                var stringFormat = new StringFormat();
+                stringFormat.SetMeasurableCharacterRanges(new[] { new CharacterRange(0, text.Length) });
+                Region[] region = graphics.MeasureCharacterRanges(text, font, new Rectangle(0, 0, image.Width, image.Height), stringFormat);
+                RectangleF rect = region[0].GetBounds(graphics);
+                rect.Width += (int)Math.Ceiling(rect.Width * 0.05d);
 
-                PointF point = new PointF();
+                var point = new PointF();
                 switch (corner)
                 {
                     case Corner.UpperLeft:
@@ -105,15 +103,13 @@ namespace ImgResize
                         point.X = image.Width - rect.Width;
                         point.Y = image.Height - rect.Height;
                         break;
-                    default:
-                        break;
                 }
 
                 graphics.DrawString(text, font, new SolidBrush(color), point);
             }
         }
 
-        public static string HumanReadableLength(this FileInfo fileInfo)
+        public static string GetHumanReadableLength(this FileInfo fileInfo)
         {
             string[] sizes = { "B", "KB", "MB", "GB" };
             int order = 0;
@@ -125,13 +121,5 @@ namespace ImgResize
             }
             return string.Format("{0:0.##} {1}", length, sizes[order]);
         }
-    }
-
-    public enum Corner
-    {
-        UpperLeft,
-        UpperRight,
-        BottomLeft,
-        BottomRight
     }
 }

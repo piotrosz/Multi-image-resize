@@ -70,10 +70,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions.cs" />
+    <Compile Include="ConsoleOptionsHelper.cs" />
+    <Compile Include="SettingsValidator.cs" />
+    <Compile Include="CornerEnum.cs" />
+    <Compile Include="ImageExtensions.cs" />
+    <Compile Include="ImageProcessor.cs" />
     <Compile Include="Options.cs" />
+    <Compile Include="ProcessFilesResult.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="ValidationResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
