@@ -11,7 +11,7 @@ namespace ImgResize
 {
     public class ImageProcessor
     {
-        public IEnumerable<ProcessFilesResult> ProcessFiles(string[] files, Settings settings)
+        public IEnumerable<ProcessFileResult> ProcessFiles(string[] files, Settings settings)
         {
             ImageCodecInfo jgpEncoder = GetEncoder(ImageFormat.Jpeg);
             var encoderParameters = new EncoderParameters(1);
@@ -25,7 +25,7 @@ namespace ImgResize
 
                     if (!settings.OverwriteFiles && File.Exists(fileName))
                     {
-                        yield return new ProcessFilesResult { ErrorMessage = "File name is the same." };
+                        yield return new ProcessFileResult { ErrorMessage = "File name is the same." };
                     }
 
                     if (settings.Width > 0 || settings.Height > 0)
@@ -42,7 +42,7 @@ namespace ImgResize
                         original.Save(fileName, jgpEncoder, encoderParameters);
                     }
 
-                    yield return new ProcessFilesResult {FileInfo = new FileInfo(fileName)};
+                    yield return new ProcessFileResult {FileInfo = new FileInfo(fileName)};
                 }
             }
         }

@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using NDesk.Options;
+﻿using NDesk.Options;
 
 namespace ImgResize
 {
-    public static class ConsoleOptionsHelper
+    public static class ConsoleOptions
     {
         public static OptionSet DefineOptions(Settings settings)
         {
@@ -30,7 +24,7 @@ namespace ImgResize
                     x => 
                     {
                         int temp;
-                        settings.QualityError = !int.TryParse(x, out temp) && temp > 0 && temp <= 100;
+                        settings.QualityError = !int.TryParse(x, out temp) || temp < 0 || temp > 100;
                         settings.Quality = temp;
                     }
                 },
@@ -40,7 +34,7 @@ namespace ImgResize
                     x => 
                     {
                         int temp;
-                        settings.WidthError = !int.TryParse(x, out temp) && temp > 0;
+                        settings.WidthError = !int.TryParse(x, out temp) || temp < 0;
                         settings.Width = temp;
                     }
                 },
@@ -50,7 +44,7 @@ namespace ImgResize
                     x =>
                     {
                         int temp;
-                        settings.HeightError = !int.TryParse(x, out temp) && temp > 0;
+                        settings.HeightError = !int.TryParse(x, out temp) || temp < 0;
                         settings.Height = temp;
                     }
                 },
@@ -91,7 +85,7 @@ namespace ImgResize
                     x =>
                     {
                         int temp;
-                        settings.FontSizeError = int.TryParse(x, out temp) && temp > 0;
+                        settings.FontSizeError = !int.TryParse(x, out temp) || temp < 0;
                         settings.FontSize = temp;
                     }
                 },

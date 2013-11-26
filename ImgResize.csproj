@@ -70,13 +70,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConsoleOptionsHelper.cs" />
+    <Compile Include="ArgsInterpreter.cs" />
+    <Compile Include="ConsoleOptions.cs" />
+    <Compile Include="ConsoleWriter.cs" />
     <Compile Include="SettingsValidator.cs" />
     <Compile Include="CornerEnum.cs" />
     <Compile Include="ImageExtensions.cs" />
     <Compile Include="ImageProcessor.cs" />
     <Compile Include="Options.cs" />
-    <Compile Include="ProcessFilesResult.cs" />
+    <Compile Include="ProcessFileResult.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
