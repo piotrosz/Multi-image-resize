@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.IO;
-using System.Drawing;
-using System.Configuration;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using NDesk.Options;
 
 namespace ImgResize
 {
@@ -49,6 +41,6 @@ namespace ImgResize
             }
 
             return true;
-        }  
+        } 
     }
 }

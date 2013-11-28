@@ -40,7 +40,9 @@ namespace ImgResize
         public static void DrawLogo(this Image image, Image logo, Corner corner)
         {
             if (logo.Width > image.Width || logo.Height > image.Height)
+            {
                 throw new ArgumentException("Logo image must be smaller than the original image.");
+            }
 
             using (var graphics = Graphics.FromImage(image))
             {
